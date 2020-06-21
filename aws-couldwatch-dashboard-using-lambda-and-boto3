@@ -1,0 +1,44 @@
+
+import json
+
+import boto3
+
+def lambda_handler(event, context):
+    ec2_client = boto3.client('ec2')
+    CW_client = boto3.client('cloudwatch')
+    regions = ['us-east-2']
+    for region in regions:
+        ec2 = boto3.resource('ec2', region_name=region)
+        instances = ec2.instances.filter(
+            Filters=[
+                {'Name': 'tag:Type', 'Values': ['Demo']}
+            ]
+        )
+        CPUUtilization_template = '["AWS/EC2", "CPUUtilization", "InstanceId", "{}"]'
+        EBSIOBalance_template = '["AWS/EC2", "EBSIOBalance%", "InstanceId","{}"]'
+        NetworkOut_template = '["AWS/EC2", "NetworkOut", "InstanceId","{}"]'
+        NetworkIn_template = '["AWS/EC2", "NetworkIn", "InstanceId","{}"]'
+        CPUUtilization_array = []
+        EBSIOBalance_array = []
+        NetworkOut_array = []
+        NetworkIn_array = []
+        for i in instances.all():
+            print(i.id)
+            instance_id = i.id
+            CPUUtilization_array.append(CPUUtilization_template.format(i.id))
+            EBSIOBalance_array.append(EBSIOBalance_template.format(i.id))
+            NetworkOut_array.append(NetworkOut_template.format(i.id))
+            NetworkIn_array.append(NetworkIn_template.format(i.id))
+        
+        CPUUtilization_string = ",".join(CPUUtilization_array)
+        EBSIOBalance_string = ",".join(EBSIOBalance_array)
+        NetworkOut_string = ",".join(NetworkOut_array)
+        NetworkIn_string = ",".join(NetworkIn_array)
+        CPUUtilization_instances = r'{"type": "metric", "x": 0, "y": 0, "width": 24, "height": 6, "properties": {"metrics": [template], "view": "timeSeries", "stacked": false, "region": "us-east-2", "stat": "Average", "period": 5, "title": "WebServers - CPU" }}'.replace("template", CPUUtilization_string)
+        print(CPUUtilization_instances)
+        EBSIOBalance_instances = r'{"type": "metric", "x": 0, "y": 42, "width": 24, "height": 6, "properties": {"metrics": ['+EBSIOBalance_string+r'], "view": "timeSeries", "stacked": false, "region": "'+region+r'", "stat": "Average", "period": 5, "title": "EBSIOBalance %" }}'
+        NetworkOut_instances = r'{"type": "metric", "x": 12, "y": 24, "width": 12, "height": 6, "properties": {"metrics": ['+NetworkOut_string+r'], "view": "timeSeries", "stacked": false, "region": "'+region+r'", "stat": "Average", "period": 5, "title": "Web Servers - Network OUT" }}'
+        NetworkIn_instances = r'{"type": "metric", "x": 0, "y": 24, "width": 12, "height": 6, "properties": {"metrics": ['+NetworkIn_string+r'], "view": "timeSeries", "stacked": false, "region": "'+region+r'", "stat": "Average", "period": 5, "title": "Web Servers - Network IN" }}'
+        
+        response = CW_client.put_dashboard(DashboardName='test2',
+                                            DashboardBody='{"widgets": ['+CPUUtilization_instances+','+EBSIOBalance_instances+','+NetworkOut_instances+','+NetworkIn_instances+']}')
