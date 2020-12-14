@@ -1,0 +1,16 @@
+N=[1,2,2,1,6]
+N.sort(reverse=True)
+d={}
+for i in N:
+    d[i]=0
+    
+for i in N:
+    d[i]=d[i]+1
+
+d1=dict(sorted(d.items(), key=lambda item: item[1],reverse=True))
+
+
+li=[]
+for i in d1.keys():
+    li.append(i)
+print(li)
