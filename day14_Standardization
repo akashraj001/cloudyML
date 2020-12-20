@@ -1,0 +1,49 @@
+import pandas as pd
+import numpy as np
+
+x=np.array(list(range(-1,20)))
+y=x*10
+z=x+1000
+
+df=pd.DataFrame({'x':x,'y':y,'z':z})
+from sklearn.preprocessing import StandardScaler
+
+s=StandardScaler()
+s.fit_transform(df)
+s.mean_
+s.std_
+
+from sklearn.cluster import KMeans
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_iris
+import seaborn as sns
+iris = load_iris()
+
+df = pd.DataFrame(data= np.c_[iris['data'], iris['target']],
+                     columns= iris['feature_names'] + ['target'])
+
+
+x=np.array(df.iloc[:,:-1])
+kmeans = KMeans(n_clusters=3, random_state=0).fit(x)
+k1=kmeans.labels_
+
+s=StandardScaler()
+kmeans = KMeans(n_clusters=3, random_state=0).fit(s.fit_transform(x))
+sk1=kmeans.labels_
+
+df.iloc[:,1]=df.iloc[:,1]*1000
+
+x=np.array(df.iloc[:,:-1])
+kmeans = KMeans(n_clusters=3, random_state=0).fit(x)
+k2=kmeans.labels_
+
+
+s=StandardScaler()
+kmeans = KMeans(n_clusters=3, random_state=0).fit(s.fit_transform(x))
+sk2=kmeans.labels_
+
+k1==k2
+sk1==sk2
+sk1==k1
+sk2==k2
